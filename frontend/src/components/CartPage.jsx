@@ -94,16 +94,14 @@ function CartPage() {
       } else {
         // Carregar SDK do Mercado Pago para cartão
         const mp = await loadMercadoPago();
-        const cardPaymentBrickController = await mp.bricks().create('cardPayment', 'payment-container', {
+        const cardPaymentBrickController = await mp.bricks().create('payment', 'payment-container', {
           initialization: {
-            amount: total,
-            preferenceId: paymentResponse.data.preferenceId
+            amount: total
           },
           customization: {
-            visual: {
-              style: {
-                theme: 'default'
-              }
+            paymentMethods: {
+              creditCard: 'all',
+              debitCard: 'all'
             }
           },
           callbacks: {
@@ -112,6 +110,7 @@ function CartPage() {
             },
             onSubmit: async (cardFormData) => {
               try {
+                console.log('Dados do formulário do cartão:', cardFormData);
                 const response = await paymentService.processCardPayment({
                   orderId: orderResponse.data.orderId,
                   cardData: cardFormData

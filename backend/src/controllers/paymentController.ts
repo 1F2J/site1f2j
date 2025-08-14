@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { preferenceClient, paymentClient, cardPaymentClient } from '../config/mercadopago';
+import { preferenceClient, paymentClient } from '../config/mercadopago';
 import { db } from '../config/database';
 import { RowDataPacket } from 'mysql2';
 
@@ -162,15 +162,19 @@ export const processCardPayment = async (req: Request, res: Response) => {
       }
 
       // Criar pagamento com cartão
-      const payment = await cardPaymentClient.create({
+      const payment = await paymentClient.create({
         body: {
           transaction_amount: parseFloat(order.total_amount),
-          token: cardData.token,
           description: `Pedido #${orderId}`,
-          installments: cardData.installments || 1,
-          payment_method_id: cardData.payment_method_id,
+          payment_method_id: cardData.payment_method.id,
+          token: cardData.token,
+          installments: cardData.installments,
           payer: {
-            email: order.user_email
+            email: order.user_email,
+            identification: {
+              type: cardData.payer.identification.type,
+              number: cardData.payer.identification.number
+            }
           }
         }
       });
