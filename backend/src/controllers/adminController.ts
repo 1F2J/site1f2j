@@ -6,41 +6,79 @@ import { RowDataPacket, OkPacket } from 'mysql2';
 
 export const getDashboardStats = async (req: AuthRequest, res: Response) => {
   try {
-    // Estatísticas básicas do dashboard
-    const [productsCount] = await db.execute<RowDataPacket[]>('SELECT COUNT(*) as count FROM products WHERE is_active = 1');
-    const [categoriesCount] = await db.execute<RowDataPacket[]>('SELECT COUNT(*) as count FROM categories WHERE is_active = 1');
-    const [ordersCount] = await db.execute<RowDataPacket[]>('SELECT COUNT(*) as count FROM orders');
-    const [usersCount] = await db.execute<RowDataPacket[]>('SELECT COUNT(*) as count FROM users');
+    const currentDate = new Date();
+    const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const lastMonthStart = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+    const lastMonthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
 
-    // Produtos mais vendidos (simulado por enquanto)
-    const [topProducts] = await db.execute<RowDataPacket[]>(`
-      SELECT p.name, p.price, p.images, COALESCE(SUM(oi.quantity), 0) as total_sold
-      FROM products p
-      LEFT JOIN order_items oi ON p.id = oi.product_id
-      WHERE p.is_active = 1
-      GROUP BY p.id
-      ORDER BY total_sold DESC
-      LIMIT 5
-    `);
+    // Estatísticas básicas do dashboard com crescimento
+    const [productsCount] = await db.execute<RowDataPacket[]>(
+      'SELECT COUNT(*) as count FROM products WHERE is_active = 1'
+    );
+    const [productsLastMonth] = await db.execute<RowDataPacket[]>(
+      'SELECT COUNT(*) as count FROM products WHERE is_active = 1 AND created_at < ?',
+      [firstDayOfMonth]
+    );
 
-    // Pedidos recentes
-    const [recentOrders] = await db.execute<RowDataPacket[]>(`
-      SELECT o.id, o.status, o.total, o.created_at, u.name as user_name
-      FROM orders o
-      LEFT JOIN users u ON o.user_id = u.id
-      ORDER BY o.created_at DESC
-      LIMIT 10
-    `);
+    const [ordersCount] = await db.execute<RowDataPacket[]>(
+      'SELECT COUNT(*) as count, SUM(total) as revenue FROM orders WHERE created_at >= ?',
+      [firstDayOfMonth]
+    );
+    const [ordersLastMonth] = await db.execute<RowDataPacket[]>(
+      'SELECT COUNT(*) as count, SUM(total) as revenue FROM orders WHERE created_at >= ? AND created_at < ?',
+      [lastMonthStart, lastMonthEnd]
+    );
+
+    const [usersCount] = await db.execute<RowDataPacket[]>(
+      'SELECT COUNT(*) as count FROM users WHERE created_at >= ?',
+      [firstDayOfMonth]
+    );
+    const [usersLastMonth] = await db.execute<RowDataPacket[]>(
+      'SELECT COUNT(*) as count FROM users WHERE created_at >= ? AND created_at < ?',
+      [lastMonthStart, lastMonthEnd]
+    );
+
+    // Calcular crescimento
+    const calculateGrowth = (current: number, previous: number) => {
+      if (previous === 0) return 100;
+      return ((current - previous) / previous) * 100;
+    };
+
+    const currentProducts = (productsCount as any[])[0].count;
+    const lastMonthProducts = (productsLastMonth as any[])[0].count;
+    const productsGrowth = calculateGrowth(currentProducts, lastMonthProducts);
+
+    const currentOrders = (ordersCount as any[])[0].count;
+    const lastMonthOrders = (ordersLastMonth as any[])[0].count;
+    const ordersGrowth = calculateGrowth(currentOrders, lastMonthOrders);
+
+    const currentRevenue = (ordersCount as any[])[0].revenue || 0;
+    const lastMonthRevenue = (ordersLastMonth as any[])[0].revenue || 0;
+    const revenueGrowth = calculateGrowth(currentRevenue, lastMonthRevenue);
+
+    const currentUsers = (usersCount as any[])[0].count;
+    const lastMonthUsers = (usersLastMonth as any[])[0].count;
+    const usersGrowth = calculateGrowth(currentUsers, lastMonthUsers);
 
     res.json({
       stats: {
-        products: (productsCount as any[])[0].count,
-        categories: (categoriesCount as any[])[0].count,
-        orders: (ordersCount as any[])[0].count,
-        users: (usersCount as any[])[0].count
-      },
-      topProducts,
-      recentOrders
+        products: {
+          total: currentProducts,
+          growth: productsGrowth.toFixed(1)
+        },
+        orders: {
+          total: currentOrders,
+          growth: ordersGrowth.toFixed(1)
+        },
+        revenue: {
+          total: currentRevenue,
+          growth: revenueGrowth.toFixed(1)
+        },
+        users: {
+          total: currentUsers,
+          growth: usersGrowth.toFixed(1)
+        }
+      }
     });
   } catch (error) {
     console.error('Erro ao buscar estatísticas:', error);
@@ -201,7 +239,7 @@ export const getSiteSettings = async (req: AuthRequest, res: Response) => {
 
     res.json(settingsObj);
   } catch (error) {
-    console.error('Erro ao buscar configurações:', error);
+    console.error('Erro ao buscar configurações do site:', error);
     res.status(500).json({ message: 'Erro interno do servidor' });
   }
 };
@@ -580,6 +618,111 @@ export const deleteHomeSection = async (req: AuthRequest, res: Response) => {
     res.json({ message: 'Seção excluída com sucesso' });
   } catch (error) {
     console.error('Erro ao excluir seção:', error);
+    res.status(500).json({ message: 'Erro interno do servidor' });
+  }
+};
+
+// Analytics - usado pelo dashboard admin
+export const getAnalytics = async (req: AuthRequest, res: Response) => {
+  try {
+    const { range = '30d' } = req.query;
+    const daysToSubtract = range === '7d' ? 7 : range === '30d' ? 30 : range === '90d' ? 90 : 365;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - daysToSubtract);
+
+    // Vendas por dia
+    const [salesData] = await db.execute<RowDataPacket[]>(`
+      SELECT 
+        DATE_FORMAT(o.created_at, '%Y-%m-%d') as day,
+        COUNT(*) as vendas,
+        SUM(o.total) as receita
+      FROM orders o
+      WHERE o.created_at >= ?
+      GROUP BY DATE_FORMAT(o.created_at, '%Y-%m-%d')
+      ORDER BY day ASC
+    `, [startDate]);
+
+    // Vendas por categoria
+    const [categoryData] = await db.execute<RowDataPacket[]>(`
+      SELECT 
+        c.name,
+        COUNT(o.id) as value
+      FROM categories c
+      LEFT JOIN products p ON p.category_id = c.id
+      LEFT JOIN order_items oi ON oi.product_id = p.id
+      LEFT JOIN orders o ON o.id = oi.order_id
+      WHERE o.created_at >= ?
+      GROUP BY c.id
+      ORDER BY value DESC
+    `, [startDate]);
+
+    // Pedidos recentes
+    const [recentOrders] = await db.execute<RowDataPacket[]>(`
+      SELECT 
+        o.id,
+        u.name as customer,
+        o.total,
+        o.status,
+        DATE_FORMAT(o.created_at, '%Y-%m-%d') as date
+      FROM orders o
+      LEFT JOIN users u ON u.id = o.user_id
+      ORDER BY o.created_at DESC
+      LIMIT 5
+    `);
+
+    // Produtos mais vendidos
+    const [topProducts] = await db.execute<RowDataPacket[]>(`
+      SELECT 
+        p.name,
+        COUNT(oi.id) as sales,
+        SUM(oi.price * oi.quantity) as revenue
+      FROM products p
+      LEFT JOIN order_items oi ON oi.product_id = p.id
+      LEFT JOIN orders o ON o.id = oi.order_id
+      WHERE o.created_at >= ?
+      GROUP BY p.id
+      ORDER BY sales DESC
+      LIMIT 5
+    `, [startDate]);
+
+    // Receita mensal
+    const [monthlyRevenue] = await db.execute<RowDataPacket[]>(`
+      SELECT 
+        DATE_FORMAT(o.created_at, '%Y-%m') as month,
+        SUM(o.total) as receita,
+        COUNT(*) as pedidos
+      FROM orders o
+      WHERE o.created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+      GROUP BY DATE_FORMAT(o.created_at, '%Y-%m')
+      ORDER BY month ASC
+    `);
+
+    // Crescimento de usuários
+    const [userGrowth] = await db.execute<RowDataPacket[]>(`
+      SELECT 
+        DATE_FORMAT(created_at, '%Y-%m') as month,
+        COUNT(*) as usuarios
+      FROM users
+      WHERE created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+      GROUP BY DATE_FORMAT(created_at, '%Y-%m')
+      ORDER BY month ASC
+    `);
+
+    res.json({
+      salesData,
+      categoryData: categoryData.map((cat: any) => ({
+        ...cat,
+        color: cat.name === 'Impressão Digital' ? '#EB2590' :
+               cat.name === 'Adesivos' ? '#00AFEF' : '#FFF212'
+      })),
+      recentOrders,
+      topProducts,
+      monthlyRevenue,
+      userGrowth,
+      range
+    });
+  } catch (error) {
+    console.error('Erro ao buscar analytics:', error);
     res.status(500).json({ message: 'Erro interno do servidor' });
   }
 };

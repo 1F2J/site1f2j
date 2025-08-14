@@ -11,6 +11,8 @@ import adminRoutes from './routes/admin';
 import siteRoutes from './routes/site';
 import testRoutes from './routes/test';
 import cartRoutes from './routes/cart';
+import userRoutes from './routes/user';
+import paymentRoutes from './routes/payments';
 
 // Configurar variáveis de ambiente
 dotenv.config({ path: path.join(__dirname, '../../.env') });
@@ -38,6 +40,8 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/site', siteRoutes);
 app.use('/api/test', testRoutes);
 app.use('/api/cart', cartRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Rota de teste
 app.get('/api/health', (req, res) => {

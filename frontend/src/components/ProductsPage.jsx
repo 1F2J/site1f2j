@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { siteService } from '../services/api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
-import { Search, Filter, ChevronLeft, ChevronRight, Tag, X } from 'lucide-react';
+import { Badge } from './ui/badge';
+import { Separator } from './ui/separator';
+import { Search, Filter, ChevronLeft, ChevronRight, Tag, X, Grid, List, SlidersHorizontal, Star, Heart, ShoppingCart } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import Footer from './Footer';
 
 const ProductsPage = () => {
   const [categories, setCategories] = useState([]);
@@ -12,9 +17,12 @@ const ProductsPage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [selectedOptions, setSelectedOptions] = useState({});
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [sortBy, setSortBy] = useState('name'); // 'name', 'price', 'newest'
+  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
+  const [showFilters, setShowFilters] = useState(false);
+  const [favorites, setFavorites] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadData();
@@ -27,10 +35,13 @@ const ProductsPage = () => {
         siteService.getProducts()
       ]);
       setCategories(catsRes.data);
-      const parsedProducts = prodsRes.data.products.map(p => ({
+      
+      // Ajustar conforme estrutura de resposta do backend
+      const productsData = prodsRes.data.products || prodsRes.data;
+      const parsedProducts = productsData.map(p => ({
         ...p,
-        images: typeof p.images === 'string' ? JSON.parse(p.images) : p.images || [],
-        options: typeof p.options === 'string' ? JSON.parse(p.options) : p.options || {}
+        images: typeof p.images === 'string' ? JSON.parse(p.images || '[]') : p.images || [],
+        options: typeof p.options === 'string' ? JSON.parse(p.options || '{}') : p.options || {}
       }));
       setProducts(parsedProducts);
     } catch (error) {
@@ -41,268 +52,303 @@ const ProductsPage = () => {
   };
 
   const filteredProducts = products.filter(product => {
-    const matchesCategory = selectedCategory ? product.category_id === parseInt(selectedCategory) : true;
-    const matchesSearch = searchTerm ? product.name.toLowerCase().includes(searchTerm.toLowerCase()) || product.description.toLowerCase().includes(searchTerm.toLowerCase()) : true;
-    return matchesCategory && matchesSearch;
+    const matchesCategory = selectedCategory && selectedCategory !== 'all' ? product.category_id === parseInt(selectedCategory) : true;
+    const matchesSearch = searchTerm ? 
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      product.description.toLowerCase().includes(searchTerm.toLowerCase()) : true;
+    
+    const price = product.is_promo && product.promo_price ? parseFloat(product.promo_price) : parseFloat(product.price);
+    const matchesPrice = (!priceRange.min || price >= parseFloat(priceRange.min)) && 
+                        (!priceRange.max || price <= parseFloat(priceRange.max));
+    
+    return matchesCategory && matchesSearch && matchesPrice;
+  }).sort((a, b) => {
+    switch (sortBy) {
+      case 'price':
+        const priceA = a.is_promo && a.promo_price ? parseFloat(a.promo_price) : parseFloat(a.price);
+        const priceB = b.is_promo && b.promo_price ? parseFloat(b.promo_price) : parseFloat(b.price);
+        return priceA - priceB;
+      case 'newest':
+        return new Date(b.created_at) - new Date(a.created_at);
+      default:
+        return a.name.localeCompare(b.name);
+    }
   });
 
   const handleProductSelect = (product) => {
-    setSelectedProduct(product);
-    // Initialize selected options with first option of each type
-    if (product.options) {
-      const initialOptions = {};
-      Object.entries(product.options).forEach(([key, value]) => {
-        if (value.options && value.options.length > 0) {
-          initialOptions[key] = value.options[0];
-        }
-      });
-      setSelectedOptions(initialOptions);
-    }
-    setCurrentImageIndex(0);
+    navigate(`/products/${product.id}`);
   };
 
-  const handleOptionChange = (optionType, value) => {
-    setSelectedOptions(prev => ({
-      ...prev,
-      [optionType]: value
-    }));
+  const toggleFavorite = (productId) => {
+    setFavorites(prev => 
+      prev.includes(productId) 
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId]
+    );
   };
 
-  const nextImage = () => {
-    if (selectedProduct && selectedProduct.images && selectedProduct.images.length > 0) {
-      setCurrentImageIndex((prev) => 
-        prev === selectedProduct.images.length - 1 ? 0 : prev + 1
-      );
-    }
+  const clearFilters = () => {
+    setSelectedCategory('');
+    setSearchTerm('');
+    setPriceRange({ min: '', max: '' });
+    setSortBy('name');
   };
 
-  const prevImage = () => {
-    if (selectedProduct && selectedProduct.images && selectedProduct.images.length > 0) {
-      setCurrentImageIndex((prev) => 
-        prev === 0 ? selectedProduct.images.length - 1 : prev - 1
-      );
-    }
-  };
-
-  if (loading) return <div>Carregando...</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#EB2590]"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto p-4">
-      {selectedProduct ? (
-        // Product Detail View
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold">{selectedProduct.name}</h1>
-            <Button 
-              variant="ghost" 
-              onClick={() => setSelectedProduct(null)}
-              className="text-gray-500"
-            >
-              <X className="h-6 w-6" />
-            </Button>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Product Images */}
-            <div className="relative">
-              {selectedProduct.images && selectedProduct.images.length > 0 ? (
-                <>
-                  <div className="relative h-96 bg-gray-100 rounded-lg overflow-hidden">
-                    <img 
-                      src={selectedProduct.images[currentImageIndex]} 
-                      alt={selectedProduct.name} 
-                      className="w-full h-full object-contain"
-                    />
-                    
-                    {selectedProduct.images.length > 1 && (
-                      <div className="absolute inset-0 flex items-center justify-between px-4">
-                        <Button 
-                          variant="ghost" 
-                          onClick={prevImage}
-                          className="bg-white/80 rounded-full p-2 hover:bg-white"
-                        >
-                          <ChevronLeft className="h-6 w-6" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          onClick={nextImage}
-                          className="bg-white/80 rounded-full p-2 hover:bg-white"
-                        >
-                          <ChevronRight className="h-6 w-6" />
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Thumbnails */}
-                  {selectedProduct.images.length > 1 && (
-                    <div className="flex mt-4 space-x-2 overflow-x-auto">
-                      {selectedProduct.images.map((img, idx) => (
-                        <div 
-                          key={idx} 
-                          className={`w-20 h-20 rounded-md overflow-hidden cursor-pointer border-2 ${currentImageIndex === idx ? 'border-cyan-600' : 'border-transparent'}`}
-                          onClick={() => setCurrentImageIndex(idx)}
-                        >
-                          <img src={img} alt={`Thumbnail ${idx}`} className="w-full h-full object-cover" />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="h-96 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <p className="text-gray-500">Sem imagem disponível</p>
-                </div>
-              )}
-            </div>
-            
-            {/* Product Info */}
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-2xl font-bold mb-2">
-                  {selectedProduct.is_promo && selectedProduct.promo_price ? (
-                    <>
-                      <span className="text-red-600">R$ {parseFloat(selectedProduct.promo_price).toFixed(2)}</span>
-                      <span className="text-gray-400 line-through ml-2 text-lg">R$ {parseFloat(selectedProduct.price).toFixed(2)}</span>
-                    </>
-                  ) : (
-                    <span>R$ {parseFloat(selectedProduct.price).toFixed(2)}</span>
-                  )}
-                </h2>
-                <div className="flex items-center">
-                  <Tag className="h-4 w-4 text-gray-500 mr-2" />
-                  <span className="text-gray-600">{selectedProduct.category_name}</span>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Descrição</h3>
-                <p className="text-gray-700">{selectedProduct.description}</p>
-              </div>
-              
-              {/* Product Options */}
-              {selectedProduct.options && Object.keys(selectedProduct.options).length > 0 && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Opções</h3>
-                  
-                  {Object.entries(selectedProduct.options).map(([optionType, optionData]) => (
-                    <div key={optionType} className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Selecione o {optionType}:
-                      </label>
-                      <div className="flex flex-wrap gap-2">
-                        {optionData.options.map((option) => (
-                          <button
-                            key={option}
-                            className={`px-4 py-2 rounded-md border ${selectedOptions[optionType] === option ? 'bg-cyan-600 text-white border-cyan-600' : 'bg-white text-gray-800 border-gray-300 hover:border-cyan-600'}`}
-                            onClick={() => handleOptionChange(optionType, option)}
-                          >
-                            {option}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              
-              <Button className="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-3 text-lg">
-                Solicitar Orçamento
-              </Button>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Nossos Produtos</h1>
+          <p className="text-gray-600 text-lg">Descubra nossa linha completa de soluções em impressão digital</p>
         </div>
-      ) : (
-        // Products List View
-        <>
-          <h1 className="text-3xl font-bold mb-6">Produtos e Categorias</h1>
-          
-          <div className="flex gap-4 mb-6">
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Filtrar por categoria" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">Todas as categorias</SelectItem>
-                {categories.map(cat => (
-                  <SelectItem key={cat.id} value={cat.id.toString()}>{cat.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
+        
+        {/* Filters and Search */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+          <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+            {/* Search */}
             <div className="flex-1 relative">
               <Input 
                 placeholder="Buscar produtos..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-12 h-12 text-lg border-2 border-gray-200 focus:border-[#EB2590] rounded-xl"
               />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            </div>
+            
+            {/* Filter Toggle */}
+            <Button
+              variant="outline"
+              onClick={() => setShowFilters(!showFilters)}
+              className="border-2 border-gray-200 hover:border-[#EB2590] text-gray-700 hover:text-[#EB2590] h-12 px-6"
+            >
+              <SlidersHorizontal className="mr-2 h-5 w-5" />
+              Filtros
+            </Button>
+            
+            {/* View Mode */}
+            <div className="flex border-2 border-gray-200 rounded-xl overflow-hidden">
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                onClick={() => setViewMode('grid')}
+                className={`h-12 px-4 rounded-none ${viewMode === 'grid' ? 'bg-[#EB2590] text-white' : 'text-gray-600'}`}
+              >
+                <Grid className="h-5 w-5" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                onClick={() => setViewMode('list')}
+                className={`h-12 px-4 rounded-none ${viewMode === 'list' ? 'bg-[#EB2590] text-white' : 'text-gray-600'}`}
+              >
+                <List className="h-5 w-5" />
+              </Button>
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {filteredProducts.map(product => (
-              <Card 
-                key={product.id} 
-                className="cursor-pointer hover:shadow-lg transition-all duration-300"
-                onClick={() => handleProductSelect(product)}
+          {/* Advanced Filters */}
+          <AnimatePresence>
+            {showFilters && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="mt-6 pt-6 border-t border-gray-200"
               >
-                <CardHeader>
-                  <CardTitle>{product.name}</CardTitle>
-                  <CardDescription>{product.category_name}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="relative h-48 bg-gray-100 rounded-md overflow-hidden mb-4">
-                    {product.images && product.images.length > 0 ? (
-                      <img 
-                        src={product.images[0]} 
-                        alt={product.name} 
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full">
-                        <p className="text-gray-500">Sem imagem</p>
-                      </div>
-                    )}
-                    
-                    {product.images && product.images.length > 1 && (
-                      <div className="absolute bottom-2 right-2 bg-white/80 text-xs px-2 py-1 rounded-full">
-                        {product.images.length} imagens
-                      </div>
-                    )}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  {/* Category Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
+                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                      <SelectTrigger className="h-12 border-2 border-gray-200 focus:border-[#EB2590]">
+                        <SelectValue placeholder="Todas as categorias" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas as categorias</SelectItem>
+                        {categories.map(cat => (
+                          <SelectItem key={cat.id} value={cat.id.toString()}>{cat.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   
-                  <p className="line-clamp-2 text-sm text-gray-600 mb-3">{product.description}</p>
+                  {/* Sort */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Ordenar por</label>
+                    <Select value={sortBy} onValueChange={setSortBy}>
+                      <SelectTrigger className="h-12 border-2 border-gray-200 focus:border-[#EB2590]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="name">Nome A-Z</SelectItem>
+                        <SelectItem value="price">Menor Preço</SelectItem>
+                        <SelectItem value="newest">Mais Recentes</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   
-                  <div className="flex justify-between items-center">
-                    <div>
-                      {product.is_promo && product.promo_price ? (
-                        <div>
-                          <p className="font-bold text-red-600">R$ {parseFloat(product.promo_price).toFixed(2)}</p>
-                          <p className="text-sm text-gray-500 line-through">R$ {parseFloat(product.price).toFixed(2)}</p>
-                        </div>
+                  {/* Price Range */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Preço Mínimo</label>
+                    <Input
+                      type="number"
+                      placeholder="R$ 0,00"
+                      value={priceRange.min}
+                      onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
+                      className="h-12 border-2 border-gray-200 focus:border-[#EB2590]"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Preço Máximo</label>
+                    <Input
+                      type="number"
+                      placeholder="R$ 999,00"
+                      value={priceRange.max}
+                      onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
+                      className="h-12 border-2 border-gray-200 focus:border-[#EB2590]"
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex justify-between items-center mt-4">
+                  <Button
+                    variant="ghost"
+                    onClick={clearFilters}
+                    className="text-gray-600 hover:text-[#EB2590]"
+                  >
+                    Limpar Filtros
+                  </Button>
+                  
+                  <div className="text-sm text-gray-600">
+                    {filteredProducts.length} produto(s) encontrado(s)
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+        
+        {/* Products Grid/List */}
+        <motion.div 
+          layout
+          className={viewMode === 'grid' 
+            ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" 
+            : "space-y-4"
+          }
+        >
+          <AnimatePresence>
+            {filteredProducts.map(product => (
+              <motion.div
+                key={product.id}
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                whileHover={{ y: -5 }}
+                className={viewMode === 'grid' ? '' : 'w-full'}
+              >
+                <Card 
+                  className={`cursor-pointer hover:shadow-xl transition-all duration-300 border-2 border-gray-100 hover:border-[#EB2590]/30 ${
+                    viewMode === 'list' ? 'flex flex-row' : ''
+                  }`}
+                  onClick={() => handleProductSelect(product)}
+                >
+                  <div className={viewMode === 'list' ? 'w-48 flex-shrink-0' : ''}>
+                    <div className={`relative bg-gray-100 overflow-hidden ${
+                      viewMode === 'list' ? 'h-full' : 'h-48'
+                    } ${viewMode === 'grid' ? 'rounded-t-lg' : 'rounded-l-lg'}`}>
+                      {product.main_image ? (
+                        <img 
+                          src={product.main_image} 
+                          alt={product.name} 
+                          className="w-full h-full object-contain"
+                        />
                       ) : (
-                        <p className="font-bold">R$ {parseFloat(product.price).toFixed(2)}</p>
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          <Package className="h-12 w-12" />
+                        </div>
                       )}
                     </div>
-                    
-                    {product.options && Object.keys(product.options).length > 0 && (
-                      <div className="text-xs bg-gray-100 px-2 py-1 rounded-full">
-                        {Object.keys(product.options).length} opções
-                      </div>
-                    )}
                   </div>
-                </CardContent>
-              </Card>
+                  
+                  <CardContent className={`p-4 ${viewMode === 'list' ? 'flex-1' : ''}`}>
+                    <div className="space-y-3">
+                      <div>
+                        <h3 className="font-semibold text-lg text-gray-900 line-clamp-2 mb-1">
+                          {product.name}
+                        </h3>
+                        <p className="text-sm text-gray-600 line-clamp-2">
+                          {product.description}
+                        </p>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div>
+                          {product.is_promo && product.promo_price ? (
+                            <div className="flex items-center space-x-2">
+                              <span className="text-xl font-bold text-[#EB2590]">
+                                R$ {parseFloat(product.promo_price).toFixed(2)}
+                              </span>
+                              <span className="text-sm text-gray-400 line-through">
+                                R$ {parseFloat(product.price).toFixed(2)}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-xl font-bold text-gray-900">
+                              R$ {parseFloat(product.price).toFixed(2)}
+                            </span>
+                          )}
+                        </div>
+                        
+                        <Button 
+                          size="sm"
+                          className="bg-[#EB2590] hover:bg-[#EB2590]/90 text-white"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleProductSelect(product);
+                          }}
+                        >
+                          Ver Detalhes
+                        </Button>
+                      </div>
+                      
+                      {product.category_name && (
+                        <Badge variant="outline" className="text-xs">
+                          {product.category_name}
+                        </Badge>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
+          </AnimatePresence>
+        </motion.div>
+        
+        {filteredProducts.length === 0 && (
+          <div className="text-center py-12">
+            <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <Search className="h-8 w-8 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Nenhum produto encontrado</h3>
+            <p className="text-gray-600 mb-4">Tente ajustar os filtros ou termos de busca</p>
+            <Button onClick={clearFilters} className="bg-[#EB2590] hover:bg-[#EB2590]/90 text-white">
+              Limpar Filtros
+            </Button>
           </div>
-          
-          {filteredProducts.length === 0 && (
-            <p className="text-center text-gray-500 mt-8">Nenhum produto encontrado.</p>
-          )}
-        </>
-      )}
+        )}
+      </div>
+      
+      <Footer />
     </div>
   );
 };

@@ -1,28 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { adminService } from '../../services/api';
 import { Image } from 'lucide-react';
+import useSiteLogo from '../../hooks/useSiteLogo';
 
 const LogoSettings = () => {
-  const [currentLogo, setCurrentLogo] = useState('');
+  const currentLogo = useSiteLogo();
   const [logoFile, setLogoFile] = useState(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
-
-  useEffect(() => {
-    const fetchSiteSettings = async () => {
-      try {
-        const response = await fetch('http://localhost:3001/api/site/settings');
-        const data = await response.json();
-        setCurrentLogo(`http://localhost:3001${data.site_logo || '/uploads/default-logo.svg'}`);
-      } catch (error) {
-        console.error('Erro ao buscar configurações do site:', error);
-      }
-    };
-    fetchSiteSettings();
-  }, []);
 
   const handleLogoUpload = async (e) => {
     e.preventDefault();

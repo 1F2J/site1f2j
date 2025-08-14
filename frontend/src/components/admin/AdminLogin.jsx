@@ -1,27 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { authService } from '../../services/api';
+import { adminAuthService } from '../../services/api';
+import useSiteLogo from '../../hooks/useSiteLogo';
 
 import '../../App.css';
 
 const AdminLogin = () => {
-  const [logoUrl, setLogoUrl] = useState('');
-
-  useEffect(() => {
-    const fetchLogo = async () => {
-      try {
-        const response = await fetch('http://localhost:3001/api/site/settings');
-        const data = await response.json();
-        setLogoUrl(`http://localhost:3001${data.site_logo || '/uploads/default-logo.svg'}`);
-      } catch (error) {
-        console.error('Erro ao buscar logo:', error);
-      }
-    };
-    fetchLogo();
-  }, []);
+  const logoUrl = useSiteLogo();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -43,7 +31,7 @@ const AdminLogin = () => {
     setError('');
 
     try {
-      const response = await authService.login(formData.email, formData.password);
+      const response = await adminAuthService.login(formData.email, formData.password);
       const { token, user } = response.data;
 
       if (user.role !== 'admin') {

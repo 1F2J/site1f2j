@@ -21,7 +21,8 @@ import {
   getHomeSections,
   createHomeSection,
   updateHomeSection,
-  deleteHomeSection
+  deleteHomeSection,
+  getAnalytics
 } from '../controllers/adminController';
 import { verifyToken, isAdmin } from '../middlewares/auth';
 import { upload, productUpload } from '../utils/upload';
@@ -33,6 +34,7 @@ router.use(verifyToken, isAdmin);
 
 // Dashboard
 router.get('/dashboard', getDashboardStats);
+router.get('/analytics', getAnalytics);
 
 // Produtos (admin view - inclui inativos)
 router.get('/products', getAllProducts);

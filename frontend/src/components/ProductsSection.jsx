@@ -8,33 +8,33 @@ const ProductsSection = () => {
   const products = [
     {
       id: 1,
-      title: 'Impressão Digital',
-      description: 'Alta qualidade em grandes formatos para suas necessidades profissionais',
+      title: 'Impressão Digital em Grande Formato',
+      description: 'Impressão profissional em alta resolução para banners, faixas e painéis',
       icon: Printer,
-      bgColor: 'bg-gradient-to-br from-cyan-500 to-cyan-600',
+      bgColor: 'bg-gradient-to-br from-[#EB2590] to-[#EB2590]/80',
       textColor: 'text-white',
-      features: ['Resolução 4K', 'Papel Premium', 'Cores Vibrantes'],
-      price: 'A partir de R$ 15,00'
+      features: ['Resolução até 2880 DPI', 'Materiais Premium', 'Acabamento Profissional'],
+      price: 'Solicite um Orçamento'
     },
     {
       id: 2,
-      title: 'Adesivos',
-      description: 'Personalizados para sua marca com materiais resistentes',
+      title: 'Adesivos e Etiquetas',
+      description: 'Adesivos personalizados em vinil de alta performance e durabilidade',
       icon: Sticker,
-      bgColor: 'bg-gradient-to-br from-magenta-500 to-pink-600',
+      bgColor: 'bg-gradient-to-br from-[#00AFEF] to-[#00AFEF]/80',
       textColor: 'text-white',
-      features: ['Vinil Premium', 'Resistente à Água', 'Corte Personalizado'],
-      price: 'A partir de R$ 8,00'
+      features: ['Vinil Importado', 'Recorte Eletrônico', 'Laminação UV'],
+      price: 'Solicite um Orçamento'
     },
     {
       id: 3,
-      title: 'Banners',
-      description: 'Comunicação visual impactante para eventos e promoções',
+      title: 'Banners e Faixas',
+      description: 'Impressão em lona premium com acabamento reforçado para máxima durabilidade',
       icon: Flag,
-      bgColor: 'bg-gradient-to-br from-yellow-400 to-orange-500',
+      bgColor: 'bg-gradient-to-br from-[#FFF212] to-orange-400',
       textColor: 'text-black',
-      features: ['Lona Resistente', 'Ilhoses Inclusos', 'Impressão HD'],
-      price: 'A partir de R$ 25,00'
+      features: ['Lona 440g Premium', 'Ilhoses Metálicos', 'Solda Eletrônica'],
+      price: 'Solicite um Orçamento'
     }
   ];
 
@@ -120,7 +120,7 @@ const ProductsSection = () => {
                     <ul className="space-y-2 mb-6">
                       {product.features.map((feature, index) => (
                         <li key={index} className="flex items-center gap-2 text-gray-600">
-                          <div className="w-2 h-2 bg-cyan-500 rounded-full"></div>
+                          <div className="w-2 h-2 bg-gradient-to-r from-[#EB2590] to-[#00AFEF] rounded-full"></div>
                           {feature}
                         </li>
                       ))}
@@ -129,7 +129,7 @@ const ProductsSection = () => {
                   
                   <div className="border-t pt-4">
                     <div className="flex items-center justify-between mb-4">
-                      <span className="text-2xl font-bold text-cyan-600">{product.price}</span>
+                      <span className="text-2xl font-bold text-[#EB2590]">{product.price}</span>
                       <div className="flex items-center gap-4 text-sm text-gray-500">
                         <div className="flex items-center gap-1">
                           <Clock className="w-4 h-4" />
@@ -142,7 +142,7 @@ const ProductsSection = () => {
                       </div>
                     </div>
                     
-                    <Button className="w-full bg-cyan-600 hover:bg-cyan-700 text-white group">
+                    <Button className="w-full bg-gradient-to-r from-[#EB2590] to-[#00AFEF] hover:from-[#EB2590]/90 hover:to-[#00AFEF]/90 text-white group">
                       Solicitar Orçamento
                       <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </Button>
@@ -159,16 +159,16 @@ const ProductsSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
           viewport={{ once: true }}
-          className="text-center bg-gradient-to-r from-cyan-600 to-blue-600 rounded-2xl p-8 text-white"
+          className="text-center bg-gradient-to-r from-orange-400 to-orange-500 rounded-2xl p-8 text-white"
         >
           <h3 className="text-2xl md:text-3xl font-bold mb-4">
-            Precisa de algo personalizado?
+            Projetos Especiais e Personalizados
           </h3>
           <p className="text-lg mb-6 opacity-90">
-            Nossa equipe está pronta para criar soluções sob medida para seu projeto
+            Desenvolvemos soluções exclusivas em comunicação visual para sua empresa
           </p>
           <Button 
-            className="bg-white text-cyan-600 hover:bg-gray-100 px-8 py-3 text-lg font-semibold"
+            className="bg-white text-[#EB2590] hover:bg-gray-100 px-8 py-3 text-lg font-semibold"
           >
             Falar com Especialista
           </Button>

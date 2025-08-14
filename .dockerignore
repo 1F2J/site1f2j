@@ -1,0 +1,41 @@
+# Dependências
+node_modules
+.pnpm-store
+
+# Arquivos de build
+dist
+build
+
+# Arquivos de ambiente
+.env
+.env.*
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos de log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Arquivos de IDE
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Arquivos de teste
+coverage
+
+# Arquivos temporários
+*.log
+*.tmp
+
+# Arquivos de git
+.git
+.gitignore

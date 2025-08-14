@@ -29,7 +29,7 @@ const parseDbUrl = (url: string) => {
     password: match[2],
     host: match[3],
     port: parseInt(match[4]),
-    database: match[5]
+    database: 'default' // Usando o banco de dados 'default' em vez de tentar criar um novo
   };
   
   console.log('Database config parsed successfully:', {
@@ -54,7 +54,7 @@ try {
     port: 3306,
     user: 'root',
     password: '',
-    database: 'test'
+    database: 'default'
   };
   console.log('Using fallback database configuration for development');
 }

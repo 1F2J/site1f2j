@@ -2,49 +2,65 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { 
-  Palette, 
-  Truck, 
-  Users, 
-  Clock, 
-  Shield, 
-  Lightbulb,
+  Printer,
+  PenTool,
+  Layers,
+  Palette,
+  Scissors,
+  FileType,
+  Truck,
+  Clock,
+  Shield,
   CheckCircle,
-  ArrowRight
+  ArrowRight,
+  Lightbulb
 } from 'lucide-react';
 
 const ServicesSection = () => {
   const services = [
     {
       id: 1,
-      title: 'Design Personalizado',
-      description: 'Nossa equipe de designers cria layouts únicos e impactantes para seus projetos',
-      icon: Palette,
-      features: ['Criação de Arte', 'Revisão Ilimitada', 'Arquivos Editáveis'],
-      color: 'from-purple-500 to-pink-500'
+      title: 'Impressão Digital em Grande Formato',
+      description: 'Impressão profissional em alta resolução para banners, faixas e painéis de até 5 metros',
+      icon: Printer,
+      features: [
+        { icon: Palette, text: 'Cores Vibrantes e Precisas' },
+        { icon: FileType, text: 'Resolução até 2880 DPI' },
+        { icon: Shield, text: 'Garantia de 12 Meses' }
+      ],
+      color: 'from-[#EB2590] to-[#EB2590]/80'
     },
     {
       id: 2,
-      title: 'Entrega Expressa',
-      description: 'Serviço de entrega rápida para atender suas necessidades urgentes',
-      icon: Truck,
-      features: ['Entrega em 24h', 'Rastreamento Online', 'Seguro Incluso'],
-      color: 'from-blue-500 to-cyan-500'
+      title: 'Design e Criação Visual',
+      description: 'Desenvolvimento de identidade visual, logotipos e materiais publicitários personalizados',
+      icon: PenTool,
+      features: [
+        { icon: Layers, text: 'Projetos Exclusivos' },
+        { icon: Clock, text: 'Entregas em 24-48h' },
+        { icon: Scissors, text: 'Acabamento Premium' }
+      ],
+      color: 'from-[#00AFEF] to-[#00AFEF]/80'
     },
     {
       id: 3,
-      title: 'Consultoria Especializada',
-      description: 'Orientação profissional para escolher os melhores materiais e acabamentos',
-      icon: Users,
-      features: ['Análise de Projeto', 'Sugestões Técnicas', 'Suporte Completo'],
-      color: 'from-green-500 to-emerald-500'
+      title: 'Soluções Completas para Empresas',
+      description: 'Atendimento especializado para empresas com soluções personalizadas e preços especiais',
+      icon: Truck,
+      features: [
+        { icon: Shield, text: 'Qualidade Garantida' },
+        { icon: Clock, text: 'Suporte Prioritário' },
+        { icon: Palette, text: 'Consultoria Especializada' }
+      ],
+      color: 'from-[#FFF212] to-[#FFF212]/80'
     }
   ];
 
   const benefits = [
-    { icon: Clock, title: 'Agilidade', description: 'Prazos cumpridos rigorosamente' },
-    { icon: Shield, title: 'Qualidade', description: 'Materiais premium e acabamento perfeito' },
-    { icon: Lightbulb, title: 'Inovação', description: 'Tecnologia de ponta em impressão' },
-    { icon: CheckCircle, title: 'Garantia', description: '100% de satisfação garantida' }
+    { icon: Clock, title: 'Rapidez e Pontualidade', description: 'Entregas no prazo com agilidade garantida' },
+    { icon: Shield, title: 'Qualidade Superior', description: 'Equipamentos modernos e materiais certificados' },
+    { icon: Lightbulb, title: 'Tecnologia Avançada', description: 'Impressão digital de última geração' },
+    { icon: CheckCircle, title: 'Garantia Total', description: 'Satisfação garantida em todos os serviços' }
   ];
 
   const containerVariants = {
@@ -69,7 +85,7 @@ const ServicesSection = () => {
   };
 
   return (
-    <section id="services" className="py-20 bg-gray-50">
+    <section id="services" className="py-20 bg-gradient-to-br from-[#EB2590] via-[#00AFEF] to-[#FFF212]">
       <div className="container mx-auto px-4">
         {/* Header */}
         <motion.div
@@ -79,12 +95,12 @@ const ServicesSection = () => {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-800">
-            Nossos <span className="text-cyan-600">Serviços</span>
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white">
+            Nossos <span className="text-[#ff7900]">Serviços</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Oferecemos uma gama completa de serviços para atender todas as suas necessidades 
-            de comunicação visual e impressão digital.
+          <p className="text-xl text-white/90 max-w-3xl mx-auto">
+            Soluções completas em impressão digital de alta qualidade, comunicação visual e 
+            materiais gráficos para sua empresa se destacar no mercado.
           </p>
         </motion.div>
 
@@ -99,7 +115,7 @@ const ServicesSection = () => {
           {services.map((service) => (
             <motion.div key={service.id} variants={itemVariants}>
               <Card className="h-full border-none shadow-lg hover:shadow-xl transition-all duration-500 transform hover:scale-105 overflow-hidden group">
-                <div className={`bg-gradient-to-br ${service.color} p-6 text-white relative`}>
+                <div className={`bg-[#ff7900] p-6 text-white relative`}>
                   {/* Background Pattern */}
                   <div className="absolute inset-0 opacity-10">
                     <div className="absolute top-4 right-4 w-16 h-16 border-2 border-current rounded-full"></div>
@@ -117,18 +133,18 @@ const ServicesSection = () => {
                   </CardHeader>
                 </div>
 
-                <CardContent className="p-6 bg-white flex-1">
-                  <h4 className="font-semibold text-gray-800 mb-4">Inclui:</h4>
+                <CardContent className="p-6 bg-white/10 backdrop-blur-sm flex-1">
+                  <h4 className="font-semibold text-white mb-4">Inclui:</h4>
                   <ul className="space-y-3 mb-6">
                     {service.features.map((feature, index) => (
-                      <li key={index} className="flex items-center gap-3 text-gray-600">
-                        <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                        {feature}
+                      <li key={index} className="flex items-center gap-3 text-white/90">
+                        <CheckCircle className="w-5 h-5 text-[#FFF212] flex-shrink-0" />
+                        {feature.text}
                       </li>
                     ))}
                   </ul>
                   
-                  <Button className="w-full bg-gray-800 hover:bg-gray-900 text-white group">
+                  <Button className="w-full bg-[#ff7900] hover:bg-[#ff7900]/90 text-white group">
                     Saiba Mais
                     <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </Button>
@@ -144,14 +160,14 @@ const ServicesSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="bg-white rounded-2xl p-8 md:p-12 shadow-lg"
+          className="bg-[#ff7900] rounded-2xl p-8 md:p-12 shadow-lg"
         >
           <div className="text-center mb-12">
-            <h3 className="text-3xl md:text-4xl font-bold mb-4 text-gray-800">
-              Por que escolher a <span className="text-cyan-600">1F2J</span>?
+            <h3 className="text-3xl md:text-4xl font-bold mb-4 text-white">
+              Por que escolher a <span className="text-[#FFF212]">1F2J</span>?
             </h3>
-            <p className="text-lg text-gray-600">
-              Nosso compromisso é entregar excelência em cada projeto
+            <p className="text-lg text-white/90">
+              Referência em qualidade e inovação no mercado gráfico
             </p>
           </div>
 
@@ -165,11 +181,11 @@ const ServicesSection = () => {
                 viewport={{ once: true }}
                 className="text-center group"
               >
-                <div className="bg-gradient-to-br from-cyan-500 to-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <div className="bg-gradient-to-br from-[#EB2590] to-[#00AFEF] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
                   <benefit.icon className="w-8 h-8 text-white" />
                 </div>
-                <h4 className="text-xl font-bold mb-2 text-gray-800">{benefit.title}</h4>
-                <p className="text-gray-600">{benefit.description}</p>
+                <h4 className="text-xl font-bold mb-2 text-white">{benefit.title}</h4>
+                <p className="text-white/90">{benefit.description}</p>
               </motion.div>
             ))}
           </div>

@@ -8,7 +8,10 @@ import {
   Target,
   Heart,
   Zap,
-  Quote
+  Quote,
+  ArrowRight,
+  Printer,
+  Shield
 } from 'lucide-react';
 
 const AboutSection = () => {
@@ -59,7 +62,7 @@ const AboutSection = () => {
   ];
 
   return (
-    <section id="about" className="py-20 bg-white">
+    <section id="about" className="py-20 bg-gradient-to-br from-[#EB2590] via-[#00AFEF] to-[#FFF212]">
       <div className="container mx-auto px-4">
         {/* Header */}
         <motion.div
@@ -69,10 +72,10 @@ const AboutSection = () => {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-800">
-            Sobre a <span className="text-cyan-600">1F2J</span>
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white">
+            Sobre a <span className="text-[#ff7900]">1F2J</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-white/90 max-w-3xl mx-auto">
             Somos uma gráfica digital especializada em soluções de impressão de alta qualidade, 
             comprometida em transformar suas ideias em realidade.
           </p>
@@ -86,8 +89,8 @@ const AboutSection = () => {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <h3 className="text-3xl font-bold mb-6 text-gray-800">Nossa História</h3>
-            <div className="space-y-4 text-gray-600 text-lg leading-relaxed">
+            <h3 className="text-3xl font-bold mb-6 text-white">Nossa História</h3>
+            <div className="space-y-4 text-white/90 text-lg leading-relaxed">
               <p>
                 Fundada com o objetivo de revolucionar o mercado de impressão digital, 
                 a 1F2J nasceu da paixão por criar soluções visuais impactantes e de alta qualidade.
@@ -111,7 +114,7 @@ const AboutSection = () => {
             viewport={{ once: true }}
             className="relative"
           >
-            <div className="bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl p-8 text-white">
+            <div className="bg-[#ff7900] rounded-2xl p-8 text-white">
               <h3 className="text-2xl font-bold mb-6">Nossa Missão</h3>
               <p className="text-lg mb-6 opacity-90">
                 "Transformar ideias em realidade através de soluções de impressão 
@@ -150,10 +153,10 @@ const AboutSection = () => {
               viewport={{ once: true }}
               className="text-center group"
             >
-              <div className="bg-gradient-to-br from-cyan-500 to-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+              <div className="bg-gradient-to-br from-[#00AFEF] to-[#EB2590] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
                 <stat.icon className="w-8 h-8 text-white" />
               </div>
-              <div className="text-3xl md:text-4xl font-bold text-cyan-600 mb-2">
+              <div className="text-3xl md:text-4xl font-bold text-[#00AFEF] mb-2">
                 {stat.number}
               </div>
               <div className="text-gray-600 font-medium">{stat.label}</div>
@@ -170,7 +173,7 @@ const AboutSection = () => {
           className="mb-20"
         >
           <h3 className="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-800">
-            Nossos <span className="text-cyan-600">Valores</span>
+            Nossos <span className="text-[#00AFEF]">Valores</span>
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -184,7 +187,7 @@ const AboutSection = () => {
               >
                 <Card className="h-full border-none shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                   <CardContent className="p-8 text-center">
-                    <div className="bg-gradient-to-br from-cyan-500 to-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <div className="bg-gradient-to-br from-[#00AFEF] to-[#EB2590] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
                       <value.icon className="w-8 h-8 text-white" />
                     </div>
                     <h4 className="text-xl font-bold mb-4 text-gray-800">{value.title}</h4>
@@ -205,7 +208,7 @@ const AboutSection = () => {
           className="bg-gray-50 rounded-2xl p-8 md:p-12"
         >
           <h3 className="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-800">
-            O que nossos <span className="text-cyan-600">clientes</span> dizem
+            O que nossos <span className="text-[#00AFEF]">clientes</span> dizem
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -219,7 +222,7 @@ const AboutSection = () => {
               >
                 <Card className="h-full border-none shadow-lg bg-white">
                   <CardContent className="p-6">
-                    <Quote className="w-8 h-8 text-cyan-500 mb-4" />
+                    <Quote className="w-8 h-8 text-[#00AFEF] mb-4" />
                     <p className="text-gray-600 mb-6 italic leading-relaxed">
                       "{testimonial.text}"
                     </p>
@@ -230,7 +233,7 @@ const AboutSection = () => {
                       </div>
                       <div className="flex space-x-1">
                         {[...Array(testimonial.rating)].map((_, i) => (
-                          <div key={i} className="w-4 h-4 bg-yellow-400 rounded-full"></div>
+                          <div key={i} className="w-4 h-4 bg-[#FFF212] rounded-full"></div>
                         ))}
                       </div>
                     </div>
@@ -256,7 +259,7 @@ const AboutSection = () => {
             Entre em contato conosco e descubra como podemos ajudar você
           </p>
           <Button 
-            className="bg-cyan-600 hover:bg-cyan-700 text-white px-8 py-3 text-lg font-semibold"
+            className="bg-[#EB2590] hover:bg-[#EB2590]/90 text-white px-8 py-3 text-lg font-semibold"
             onClick={() => {
               const element = document.getElementById('contact');
               if (element) {

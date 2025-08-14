@@ -1,0 +1,17 @@
+{
+  "name": "1f2j-renovado",
+  "version": "1.0.0",
+  "description": "Projeto E-commerce",
+  "scripts": {
+    "install:all": "pnpm install && cd frontend && pnpm install && cd ../backend && pnpm install",
+    "dev": "concurrently \"cd frontend && pnpm dev\" \"cd backend && pnpm dev\"",
+    "build": "cd frontend && pnpm build && cd ../backend && pnpm build",
+    "start": "concurrently \"cd frontend && pnpm preview\" \"cd backend && pnpm start\"",
+    "init-db": "cd backend && pnpm init-db"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "devDependencies": {},
+  "packageManager": "pnpm@10.4.1"
+}

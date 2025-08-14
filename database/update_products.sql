@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS products (
   is_promo BOOLEAN DEFAULT FALSE,
   stock INT DEFAULT 0,
   category_id INT,
-  images JSON,  -- Array JSON de caminhos de imagens, ex: ["/uploads/img1.jpg", "/uploads/img2.jpg"]
+  main_image VARCHAR(255),  -- Caminho para a imagem principal
+  secondary_images JSON,  -- Array JSON de caminhos de imagens secundárias
   options JSON, -- Objeto JSON para opções flexíveis, ex: {"material": {"type": "select", "options": ["Vinil Branco", "Vinil Transparente"]}}
   is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -21,5 +22,5 @@ CREATE TABLE IF NOT EXISTS products (
 );
 
 -- Exemplo de inserção:
--- INSERT INTO products (name, description, price, category_id, images, options) 
--- VALUES ('Produto Exemplo', 'Descrição', 10.00, 1, '["/uploads/img1.jpg"]', '{"material": {"type": "select", "options": ["Vinil Branco", "Vinil Transparente"]}}');
+-- INSERT INTO products (name, description, price, category_id, main_image, secondary_images, options) 
+-- VALUES ('Produto Exemplo', 'Descrição', 10.00, 1, '/uploads/main.jpg', '["uploads/sec1.jpg", "/uploads/sec2.jpg"]', '{"material": {"type": "select", "options": ["Vinil Branco", "Vinil Transparente"]}}');

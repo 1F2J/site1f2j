@@ -33,10 +33,11 @@ const HomeProductSections = () => {
   if (sections.length === 0) return null;
 
   return (
-    <div className="py-12">
+    <div className="py-12 bg-gradient-to-br from-orange-50 via-orange-100 to-orange-50">
       {Array.isArray(sections) ? sections.map((section) => (
-        <section key={section.id} className="container mx-auto px-4 mb-12">
-          <h2 className="text-3xl font-bold mb-8 text-center">{section.title}</h2>
+        <section key={section.id} className="container mx-auto px-4 mb-12 relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-[#EB2590]/5 via-[#00AFEF]/5 to-[#FFF212]/5 rounded-xl"></div>
+          <h2 className="text-3xl font-bold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-[#EB2590] via-[#00AFEF] to-[#FFF212]">{section.title}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {section.products.map((product) => (
               <ProductCard key={product.id} product={product} />

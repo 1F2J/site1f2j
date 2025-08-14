@@ -11,7 +11,9 @@ import {
   Send,
   MessageCircle,
   FileText,
-  Calculator
+  Calculator,
+  MessageSquare,
+  Calendar
 } from 'lucide-react';
 
 const ContactSection = () => {
@@ -55,22 +57,24 @@ const ContactSection = () => {
   };
 
   return (
-    <section id="contact" className="py-20 bg-gradient-to-b from-gray-50 to-white">
-      <div className="container mx-auto px-4">
-        {/* Header */}
+    <section id="contact" className="py-24 bg-gradient-to-br from-[#EB2590] via-[#00AFEF] to-[#FFF212] relative overflow-hidden">
+      {/* Decorative Elements */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#ff7900]/20 via-[#ff7900]/10 to-[#ff7900]/20 pointer-events-none"></div>
+      <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-[#ff7900]/20 to-[#ff7900]/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-br from-[#ff7900]/20 to-[#ff7900]/10 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2"></div>
+
+      <div className="container mx-auto px-4 relative">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-800">
-            Entre em <span className="text-cyan-600">Contato</span>
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
+            Vamos Criar Algo <span className="text-[#ff7900]">Incrível</span> Juntos
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Estamos prontos para atender você e transformar suas ideias em realidade. 
-            Entre em contato conosco e solicite seu orçamento.
+          <p className="text-xl text-white/90 max-w-3xl mx-auto">
+            Nossa equipe especializada está pronta para transformar suas ideias em realidade com soluções personalizadas e tecnologia de ponta
           </p>
         </motion.div>
 
@@ -90,13 +94,13 @@ const ContactSection = () => {
               transition={{ duration: 0.6, delay: index * 0.1 }}
               viewport={{ once: true }}
             >
-              <Card className="text-center border-none shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+              <Card className="text-center border-none shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white/10 backdrop-blur-sm">
                 <CardContent className="p-6">
-                  <div className="bg-gradient-to-br from-cyan-500 to-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="bg-[#ff7900] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                     <service.icon className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold mb-2 text-gray-800">{service.title}</h3>
-                  <p className="text-gray-600">{service.description}</p>
+                  <h3 className="text-xl font-bold mb-2 text-white">{service.title}</h3>
+                  <p className="text-white/90">{service.description}</p>
                 </CardContent>
               </Card>
             </motion.div>
@@ -111,10 +115,10 @@ const ContactSection = () => {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <Card className="border-none shadow-xl">
+            <Card className="border-none shadow-xl bg-white/10 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                  <Send className="w-6 h-6 text-cyan-600" />
+                <CardTitle className="text-2xl font-bold text-white flex items-center gap-2">
+                  <Send className="w-6 h-6 text-[#FFF212]" />
                   Envie sua Mensagem
                 </CardTitle>
               </CardHeader>
@@ -122,66 +126,66 @@ const ContactSection = () => {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-white mb-2">
                         Nome *
                       </label>
                       <Input 
                         type="text" 
                         required 
-                        className="w-full"
+                        className="w-full bg-white/20 border-white/20 text-white placeholder:text-white/60"
                         placeholder="Seu nome completo"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-white mb-2">
                         Telefone *
                       </label>
                       <Input 
                         type="tel" 
                         required 
-                        className="w-full"
+                        className="w-full bg-white/20 border-white/20 text-white placeholder:text-white/60"
                         placeholder="(11) 99999-9999"
                       />
                     </div>
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-white mb-2">
                       E-mail *
                     </label>
                     <Input 
                       type="email" 
                       required 
-                      className="w-full"
+                      className="w-full bg-white/20 border-white/20 text-white placeholder:text-white/60"
                       placeholder="seu@email.com"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-white mb-2">
                       Assunto
                     </label>
                     <Input 
                       type="text" 
-                      className="w-full"
+                      className="w-full bg-white/20 border-white/20 text-white placeholder:text-white/60"
                       placeholder="Assunto da sua mensagem"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-white mb-2">
                       Mensagem *
                     </label>
                     <Textarea 
                       required 
-                      className="w-full min-h-[120px]"
+                      className="w-full min-h-[120px] bg-white/20 border-white/20 text-white placeholder:text-white/60"
                       placeholder="Descreva seu projeto ou dúvida..."
                     />
                   </div>
                   
                   <Button 
                     type="submit" 
-                    className="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-3 text-lg font-semibold"
+                    className="w-full bg-[#ff7900] hover:bg-[#ff7900]/90 text-white py-3 text-lg font-semibold"
                   >
                     <Send className="w-5 h-5 mr-2" />
                     Enviar Mensagem
@@ -200,7 +204,7 @@ const ContactSection = () => {
             className="space-y-6"
           >
             <div>
-              <h3 className="text-2xl font-bold mb-6 text-gray-800">
+              <h3 className="text-2xl font-bold mb-6 text-white">
                 Informações de Contato
               </h3>
               <div className="space-y-4">
@@ -211,15 +215,15 @@ const ContactSection = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: index * 0.1 }}
                     viewport={{ once: true }}
-                    className="flex items-start space-x-4 p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
+                    className="flex items-start space-x-4 p-4 bg-white/10 backdrop-blur-sm rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
                   >
-                    <div className="bg-gradient-to-br from-cyan-500 to-blue-600 w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0">
+                    <div className="bg-[#ff7900] w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0">
                       <info.icon className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-800 mb-1">{info.title}</h4>
-                      <p className="text-cyan-600 font-medium">{info.info}</p>
-                      <p className="text-sm text-gray-500">{info.description}</p>
+                      <h4 className="font-semibold text-white mb-1">{info.title}</h4>
+                      <p className="text-[#FFF212] font-medium">{info.info}</p>
+                      <p className="text-sm text-white/80">{info.description}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -232,7 +236,7 @@ const ContactSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
               viewport={{ once: true }}
-              className="bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg p-8 text-white text-center"
+              className="bg-[#ff7900] rounded-lg p-8 text-white text-center"
             >
               <MapPin className="w-16 h-16 mx-auto mb-4" />
               <h4 className="text-xl font-bold mb-2">Nossa Localização</h4>
@@ -251,7 +255,7 @@ const ContactSection = () => {
               className="space-y-3"
             >
               <Button 
-                className="w-full bg-green-600 hover:bg-green-700 text-white py-3 text-lg font-semibold"
+                className="w-full bg-[#ff7900] hover:bg-[#ff7900]/90 text-white py-3 text-lg font-semibold"
                 onClick={() => window.open('https://wa.me/5511999999999', '_blank')}
               >
                 <MessageCircle className="w-5 h-5 mr-2" />
@@ -260,7 +264,7 @@ const ContactSection = () => {
               
               <Button 
                 variant="outline"
-                className="w-full border-cyan-600 text-cyan-600 hover:bg-cyan-600 hover:text-white py-3 text-lg font-semibold"
+                className="w-full border-white text-white hover:bg-white hover:text-[#ff7900] py-3 text-lg font-semibold"
                 onClick={() => window.location.href = 'tel:+5511999999999'}
               >
                 <Phone className="w-5 h-5 mr-2" />

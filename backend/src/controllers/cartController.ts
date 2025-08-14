@@ -123,43 +123,107 @@ export const removeFromCart = async (req: AuthRequest, res: Response) => {
 export const checkout = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.id;
-    const { shipping_address, payment_method } = req.body;
+    if (!userId) return res.status(401).json({ message: 'Usuário não autenticado' });
 
-    const [cart] = await db.execute<RowDataPacket[]>(
-      'SELECT id FROM carts WHERE user_id = ?',
-      [userId]
-    );
-    const cartId = cart[0]?.id;
-    if (!cartId) return res.status(400).json({ message: 'Carrinho vazio' });
-
-    const [items] = await db.execute<RowDataPacket[]>(
-      `SELECT ci.product_id, ci.quantity, ci.options, p.price
-       FROM cart_items ci
-       JOIN products p ON ci.product_id = p.id
-       WHERE ci.cart_id = ?`,
-      [cartId]
-    );
-
-    if (items.length === 0) return res.status(400).json({ message: 'Carrinho vazio' });
-
-    const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-    const [orderResult] = await db.execute<OkPacket>(
-      'INSERT INTO orders (user_id, total, status, shipping_address, payment_method) VALUES (?, ?, ?, ?, ?)',
-      [userId, total, 'pending', shipping_address, payment_method]
-    );
-    const orderId = orderResult.insertId;
-
-    for (const item of items) {
-      await db.execute(
-        'INSERT INTO order_items (order_id, product_id, quantity, price, options) VALUES (?, ?, ?, ?, ?)',
-        [orderId, item.product_id, item.quantity, item.price, item.options]
-      );
+    const { payment_method, address_data } = req.body;
+    if (!payment_method) return res.status(400).json({ message: 'Método de pagamento não selecionado' });
+    if (!address_data || !address_data.cep || !address_data.street) {
+      return res.status(400).json({ message: 'Dados do endereço incompletos' });
     }
 
-    await db.execute('DELETE FROM cart_items WHERE cart_id = ?', [cartId]);
+    // Iniciar transação
+    await db.beginTransaction();
 
-    res.status(201).json({ message: 'Pedido criado com sucesso', orderId });
+    try {
+      // Buscar carrinho
+      const [cart] = await db.execute<RowDataPacket[]>(
+        'SELECT id FROM carts WHERE user_id = ?',
+        [userId]
+      );
+      const cartId = cart[0]?.id;
+      if (!cartId) {
+        await db.rollback();
+        return res.status(400).json({ message: 'Carrinho vazio' });
+      }
+
+      // Buscar itens do carrinho com informações do produto
+      const [items] = await db.execute<RowDataPacket[]>(
+        `SELECT ci.*, p.price, p.name, p.stock
+         FROM cart_items ci
+         JOIN products p ON ci.product_id = p.id
+         WHERE ci.cart_id = ?`,
+        [cartId]
+      );
+
+      if (items.length === 0) {
+        await db.rollback();
+        return res.status(400).json({ message: 'Carrinho vazio' });
+      }
+
+      // Verificar estoque
+      for (const item of items) {
+        if (item.quantity > item.stock) {
+          await db.rollback();
+          return res.status(400).json({
+            message: `Produto ${item.name} não possui estoque suficiente`
+          });
+        }
+      }
+
+      // Calcular total
+      const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const shipping = 0; // Implementar cálculo de frete
+      const total = subtotal + shipping;
+
+      // Criar pedido
+      const [orderResult] = await db.execute<OkPacket>(
+        `INSERT INTO orders (
+          user_id,
+          status,
+          total_amount,
+          payment_method,
+          payment_status,
+          shipping_address
+        ) VALUES (?, ?, ?, ?, ?, ?)`,
+        [userId, 'pending', total, payment_method, 'pending', JSON.stringify(address_data)]
+      );
+      const orderId = orderResult.insertId;
+
+      // Inserir itens do pedido
+      for (const item of items) {
+        await db.execute(
+          `INSERT INTO order_items (
+            order_id,
+            product_id,
+            quantity,
+            unit_price,
+            selected_options
+          ) VALUES (?, ?, ?, ?, ?)`,
+          [orderId, item.product_id, item.quantity, item.price, item.options]
+        );
+
+        // Atualizar estoque
+        await db.execute(
+          'UPDATE products SET stock = stock - ? WHERE id = ?',
+          [item.quantity, item.product_id]
+        );
+      }
+
+      // Limpar carrinho
+      await db.execute('DELETE FROM cart_items WHERE cart_id = ?', [cartId]);
+
+      // Confirmar transação
+      await db.commit();
+
+      res.status(201).json({
+        message: 'Pedido criado com sucesso',
+        orderId,
+        total
+      });
+    } catch (error) {
+      await db.rollback();
+      throw error;
+    }
   } catch (error) {
     console.error('Erro ao finalizar compra:', error);
     res.status(500).json({ message: 'Erro interno do servidor' });

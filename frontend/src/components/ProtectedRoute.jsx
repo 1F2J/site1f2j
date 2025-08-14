@@ -1,15 +1,24 @@
 import { Navigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { adminAuthService } from '../services/api';
 
 const ProtectedRoute = ({ children, requireAdmin = false }) => {
-  const token = localStorage.getItem('token');
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const { isAuthenticated } = useAuth();
+  const isAdminAuthenticated = adminAuthService.isAuthenticated();
 
-  if (!token) {
-    return <Navigate to="/admin/login" replace />;
+  if (requireAdmin) {
+    if (!isAdminAuthenticated) {
+      return <Navigate to="/admin/login" replace />;
+    }
+    const adminUser = adminAuthService.getCurrentUser();
+    if (!adminUser || adminUser.role !== 'admin') {
+      return <Navigate to="/admin/login" replace />;
+    }
+    return children;
   }
 
-  if (requireAdmin && user.role !== 'admin') {
-    return <Navigate to="/admin/login" replace />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
   }
 
   return children;
