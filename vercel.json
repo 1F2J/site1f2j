@@ -5,16 +5,12 @@
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "frontend/dist",
-        "buildCommand": "cd frontend && pnpm install && pnpm run build"
+        "distDir": "frontend/dist"
       }
     },
     {
       "src": "backend/package.json",
-      "use": "@vercel/node",
-      "config": {
-        "buildCommand": "cd backend && pnpm install && pnpm run build"
-      }
+      "use": "@vercel/node"
     }
   ],
   "routes": [
