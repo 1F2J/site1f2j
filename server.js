@@ -13,10 +13,10 @@ app.get('*', (req, res) => {
 });
 
 // Importar e usar as rotas do backend
-const backendApp = require('./backend/dist/index.js');
+const backendApp = require('./backend/dist/index.js').default;
 app.use(backendApp);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 6000;
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });

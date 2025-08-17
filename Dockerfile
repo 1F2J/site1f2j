@@ -6,13 +6,20 @@ RUN npm install
 COPY frontend/ ./
 RUN npm run build
 
-# Estágio de build do backend
+# Construir o backend
 FROM node:18-alpine as backend-builder
 WORKDIR /app/backend
 COPY backend/package*.json ./
 RUN npm install
 COPY backend/ ./
 RUN npm run build
+
+# Instalar dependências de produção
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+COPY --from=backend-builder /app/backend/dist ./backend/dist
+RUN npm install --production
 
 # Imagem final
 FROM node:18-alpine
@@ -21,12 +28,16 @@ WORKDIR /app
 # Copiar arquivos do frontend
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
-# Copiar arquivos do backend
+# Copiar arquivos do backend e suas dependências
 COPY --from=backend-builder /app/backend/dist ./backend/dist
+COPY --from=backend-builder /app/backend/package*.json ./backend/
+WORKDIR /app/backend
+RUN npm install --production
+WORKDIR /app
 
 # Copiar package.json raiz e instalar dependências
 COPY package*.json ./
-RUN npm install --production
+RUN npm install -g pnpm@10.4.1 && pnpm install --production
 
 # Copiar arquivo do servidor
 COPY server.js ./
@@ -35,5 +46,5 @@ COPY server.js ./
 COPY backend/.env ./backend/.env
 COPY frontend/.env ./frontend/.env
 
-EXPOSE 3000
+EXPOSE 6000
 CMD ["node", "server.js"]
